@@ -23,7 +23,7 @@ sigChar:
 final:
         sub     eax, ebx
 
-        mov     exd, 20     ; edx = longitud de cadena
+        mov     edx, 20     ; edx = longitud de cadena
         mov     ecx, msg    ; ecx = cadena
         mov     ebx, 1      ; STDOUT file
         mov     eax, 4      ; funcion de sistema SYS_WRITE

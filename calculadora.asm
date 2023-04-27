@@ -1,129 +1,187 @@
-; Calculadora en asm
+BITS 64
+extern  printf  ; Para imprimir enteros
+extern  scanf   ; Para escribir del teclado
+
+%macro  imprimir 2
+    mov     rax, 1
+    mov     rdi, 1
+    mov     rsi, %1 ; Direccion de memoria de la cadena
+    mov     rdx, %2 ; Longitud de la cadena
+    syscall
+%endmacro
+
+%macro  imp_entero 1
+    mov     rdi, result ; Formato 1
+    mov     rsi, %1
+    call    printf      ; Imprimir
+%endmacro
+
+%macro  imp_entero 2
+    mov     rdi, formato    ; Formato 2
+    mov     rsi, %1
+    call    printf          ; Imprimir
+%endmacro
+
+%macro  capturar 1
+    mov     rdi, formato    ; Formato 2
+    mov     rsi, %1
+    call    scanf           ; Teclado
+%endmacro
 
 section .data
-    msg             db      'Ingrese una opcion: ',0
-    invalid_input   db      'Entrada no valida.',0
-    num1            db      'Ingrese el primer numero: ',0
-    num2            db      'Ingrese el segundo numero: ',0
-    result          db      'El resultado es: ',0
+    dvoy        db      "Aqui voy",10
+    ldvoy       equ     $-dvoy
+
+    menu        db      "Calculadora",10,"1. Suma",10,"2. Resta",10,"3. Multiplicación",10,"4. Division",10,"5.Salir",10,10,"Ingresa la opcion que deseas: "
+    lmenu       equ     $-menu
+
+    nu1         db      "Ingresa el Primer Numero: "
+    lu1         equ     $-nu1
+
+    nu2         db      "Ingresa el Segundo Numero: "
+    lu2         equ     $-nu2
+
+    error       db      "El numero que ingresaste no es valido",10
+    lero        equ     $-error
+
+    result      db      "El resultado es =%d",10,0
+    lresult     equ     $-result
+
+    separa      db      "-----------------------------------",10
+    lsep        equ     $-separa
+
+    sepa2       db      "| | | | | | | | | | | | | | | | | |",10,10
+    lsepa2      equ     $-sepa2
+
+    formato     db      "%d"
 
 section .bss
-    opcion          resb 1
-    numero1         resb 10
-    numero2         resb 10
-    resultado       resb 10
+    num1        resd 1  ; Numero 1
+    num2        resd 1  ; Numero 2
+    resul      resd 1  ; Resultado
+    op          resd 1  ; Opcion
 
 section .text
     global      _start
 
 _start:
-    ; muestra el mensaje de bienvenida
-    mov             eax, 4
-    mov             ebx, 1
-    mov             ecx, msg
-    mov             edx, len_msg
-    int 80h
+    imprimir    sepa2, lsepa2
+    imprimir    menu, lmenu
+    call        opcion
+    imprimir    separa, lsep
+    mov         al,[op]
 
-    ; lee la opcion seleccionada por el usuario
-    mov             eax, 3
-    mov             ebx, 0
-    mov             ecx, opcion
-    mov             edx, 1
-    int 80h
+    cmp         al,1
+    je          suma
 
-    ; determina la operacion a realizar
-    cmp     byte [opcion], '+'
-    je      suma
-    cmp     byte [opcion], '-'
-    je      resta
-    cmp     byte [opcion], '*'
-    je      multiplicacion
-    cmp     byte [opcion], '/'
-    je      division
-    jmp     error
+    cmp         al,2
+    je          resta
+
+    cmp         al,3
+    je          multi
+
+    cmp         al,4
+    je          divid
+
+    cmp         al,5
+    je          salir
+
+    imprimir    separa, lsep
+    imprimir    error,lero
+    imprimir    separa, lsep
+
+    jmp         main
+
+tope:
+    mov         rax,[rsp+0]
+    mov         [num1],rax
+    imprimir    [num1],10
+    ret
+
+entero1:
+    mov         rdi, formato
+    mov         rsi, [num1]
+    call        printf
+
+opcion:
+    capturar    op
+    ret
+
+parametros:
+    imprimir    nu1,lu1     ; Texto numero 1
+    capturar    num1
+    mov         r15d, [num1]
+    imprimir    separa, lsep
+    imprimir    nu2, lu2
+    capturar    num2
+    mov         r14d,[num2]
+    imprimir    separa,lsep
+
+    ret
+
+resu:
+    imp_entero  [resul]
+    imprimir    separa,lsep
+
+    ret
 
 suma:
-    ; solicita el primer numero
-    mov         eax, 4
-    mov         ebx, 1
-    mov         ecx, num1
-    mov         edx, len_num1
-    int 80h
+    call        parametros
+    call        fsum
+    call        resu
+    jmp         main
 
-    ; lee el primer numero
-    mov         eax, 3
-    mov         ebx, 0
-    mov         ecx, numero1
-    mov         edx, 10
-    int 80h
+fsum:
+    add         r15d, r14d
+    mov         [resul],r15d
 
-    ; solicita el segundo numero
-    mov         eax, 4
-    mov         ebx, 1
-    mov         ecx, num2
-    mov         edx, len_num2
-    int 80h
-
-    ; lee el segundo numero
-    mov         eax, 3
-    mov         ebx, 0
-    mov         ecx, numero2
-    mov         edx, 10
-    int 80h
-
-    ; convierte los numeros a enteros
-    mov         eax, numero1
-    sub         eax, '0'
-    mov         ebx, numero2
-    sub         ebx, '0'
-
-    ; realiza la suma
-    add         eax, ebx
-
-    ; convierte el resultado a una cadena
-    add         eax, '0'
-    mov         [resultado], eax
-
-    ; muestra el resultado
-    mov         eax, 4
-    mov         ebx, 1
-    mov         ecx, result
-    mov         edx, len_result
-    int 80h
-
-    mov         eax, 4
-    mov         ebx, 1
-    mov         ecx, resultado
-    mov         edx, 1
-    int 80h
-
-    ; sale del programa
-    jmp         exit
+    ret
 
 resta:
-    ; solicita el primer numero
-    mov         eax, 4
-    mov         ebx, 1
-    mov         ecx, num1
-    mov         edx, len_num1
-    int 80h
+    call        parametros
+    call        frest
+    call        resu
+    jmp         main
 
-    ; lee el primer numero
-    mov         eax, 3
-    mov         ebx, 0
-    mov         ecx, numero1
-    mov         edx, 10
-    int 80h
+frest:
+    sub         r15d,r14d
+    mov         [resul],r15d
 
-    ; solicita el segundo numero
-    mov         eax, 4
-    mov         ebx, 1
-    mov         ecx, num2
-    mov         edx, len_num2
-    int 80h
+    ret
 
-    ; lee el segundo numero
-    mov         eax, 3
-    mov         ebx, 0
-    mov         ecx, numero2
-    mov         edx, 10
+multi:
+    call        parametros
+
+    mov         rax,r15
+    mov         r10,r14
+
+    call        fmul
+    call        resu
+    jmp         main
+
+fmul:
+    imul        r10
+    mov         [resul],rax
+
+    ret
+
+divid:
+    call        parametros
+
+    mov         rax,r15         ; Numerador
+    mov         r10,r14         ; Denomidador
+    mov         rdx,0           ; Residuo
+
+    call        fdiv
+    call        resu
+    jmp         main
+
+fdiv:
+    idiv        r10
+    mov         [resul],rax
+    ret
+
+salir:
+    mov         rax,60
+    mov         rdi,0
+    syscall
