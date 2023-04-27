@@ -10,20 +10,20 @@ extern  scanf   ; Para escribir del teclado
     syscall
 %endmacro
 
-%macro  imp_entero 1
+%macro  imp_entero_1 1
     mov     rdi, result ; Formato 1
     mov     rsi, %1
     call    printf      ; Imprimir
 %endmacro
 
-%macro  imp_entero 2
+%macro  imp_entero_2 1
     mov     rdi, formato    ; Formato 2
     mov     rsi, %1
     call    printf          ; Imprimir
 %endmacro
 
 %macro  capturar 1
-    mov     rdi, formato    ; Formato 2
+    mov     rdi, formato    ; Formato 1
     mov     rsi, %1
     call    scanf           ; Teclado
 %endmacro
@@ -44,7 +44,7 @@ section .data
     error       db      "El numero que ingresaste no es valido",10
     lero        equ     $-error
 
-    result      db      "El resultado es =%d",10,0
+    result      db      "El resultado es = %d",10,0
     lresult     equ     $-result
 
     separa      db      "-----------------------------------",10
@@ -56,10 +56,10 @@ section .data
     formato     db      "%d"
 
 section .bss
-    num1        resd 1  ; Numero 1
-    num2        resd 1  ; Numero 2
-    resul      resd 1  ; Resultado
-    op          resd 1  ; Opcion
+    num1        resq 1  ; Numero 1
+    num2        resq 1  ; Numero 2
+    resul       resq 1  ; Resultado
+    op          resq 1  ; Opcion
 
 section .text
     global      _start
@@ -185,3 +185,6 @@ salir:
     mov         rax,60
     mov         rdi,0
     syscall
+
+main:
+    jmp         _start
