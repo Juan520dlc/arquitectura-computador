@@ -120,10 +120,9 @@ parametros:
     ret
 
 resu:
-    imp_entero  [resul]
-    imprimir    separa,lsep
-
-    ret
+    mov         rdi, formato
+    mov         rsi, [resul]
+    call printf
 
 suma:
     call        parametros

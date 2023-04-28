@@ -3,7 +3,7 @@
 ;----------------------------Calculo de longitud de cadena---------------------------------------------
 strLEN:
         push    ebx             ; inserte el valor ebx de la pila
-        mov     ebx, eax        ; mueve la direccion de ;
+        mov     ebx, eax        ; mueve el puntero de la cadena a ebx
 
 sigChar:
         cmp     byte[eax], 0    ; if msg[eax] == 0
@@ -39,16 +39,17 @@ printInt:
         push    esi
         mov     ecx, 0
 divLoop:
-        inc     ecx                 ; conteo de digitos
-        mov     edx, 0              ; limpiar parte alta del dividendo
-        mov     esl, 10             ; esl = 10 (idivisor)
-        idiv    esl                 ; <edx:eax> / esl
+        inc     ecx             ; conteo de digitos
+        mov     edx, 0          ; limpiar parte alta del dividendo
+        mov     esi, 10         ; divisor
+        div     esi             ; eax / 10
         add     edx, 48 
         push    edx
         cmp     eax, 0
+        jne     divLoop
 printLoop:
         dec     ecx
-        mov     eax, ecp
+        mov     eax, ecx
         call    printStr
         pop     eax
         cmp     ecx, 0
